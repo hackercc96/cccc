@@ -2,16 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import openpyxl
-from openpyxl.utils.dataframe import dataframe_to_rows
 
-from openpyxl import Workbook
-from openpyxl.styles import NamedStyle
-from openpyxl.utils.dataframe import dataframe_to_rows
-
-from openpyxl import Workbook
-from openpyxl.styles import NamedStyle
-from openpyxl.utils.dataframe import dataframe_to_rows
-import pandas as pd
 
 class ExcelMatcherApp:
     def __init__(self, root):
@@ -41,30 +32,30 @@ class ExcelMatcherApp:
         left_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nswe")
 
         # 创建按钮
-        self.load_base_button = tk.Button(left_frame, text="读取基本文件", command=self.load_base_file)
+        self.load_base_button = tk.Button(left_frame, text="1读取源文件", command=self.load_base_file)
         self.load_base_button.grid(row=0, column=0, pady=10)
 
-        self.load_match_button = tk.Button(left_frame, text="读取匹配文件", command=self.load_match_file)
+        self.load_match_button = tk.Button(left_frame, text="2读取匹配文件", command=self.load_match_file)
         self.load_match_button.grid(row=1, column=0, pady=10)
 
         # 选择共同列
-        self.match_column_label = tk.Label(left_frame, text="选择共同列:")
+        self.match_column_label = tk.Label(left_frame, text="3选择共同列:")
         self.match_column_label.grid(row=2, column=0, pady=5)
         self.match_column = tk.StringVar()  # 用于存储选择的共同列
         self.match_column_menu = tk.OptionMenu(left_frame, self.match_column, "")
         self.match_column_menu.grid(row=3, column=0, pady=5)
 
         # 选择需要匹配的列
-        self.column_selection_label = tk.Label(left_frame, text="选择需要匹配的列：")
+        self.column_selection_label = tk.Label(left_frame, text="4选择需要匹配的列：")
         self.column_selection_label.grid(row=4, column=0, pady=5)
 
         self.column_selection_frame = tk.Frame(left_frame)
         self.column_selection_frame.grid(row=5, column=0, pady=5)
 
-        self.match_button = tk.Button(left_frame, text="进行匹配", command=self.match_data, state=tk.DISABLED)
+        self.match_button = tk.Button(left_frame, text="5进行匹配", command=self.match_data, state=tk.DISABLED)
         self.match_button.grid(row=6, column=0, pady=10)
 
-        self.download_button = tk.Button(left_frame, text="下载匹配文件", command=self.download_file, state=tk.DISABLED)
+        self.download_button = tk.Button(left_frame, text="6下载匹配文件", command=self.download_file, state=tk.DISABLED)
         self.download_button.grid(row=7, column=0, pady=10)
 
         self.progress = ttk.Progressbar(left_frame, length=200, mode='indeterminate')
@@ -75,24 +66,26 @@ class ExcelMatcherApp:
         self.help_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nswe")
 
         self.help_text = """
-        1. 读取基本文件和匹配文件：
-        使用“读取基本文件(进行匹配的原始文件数据以此文件为基准)”和“读取匹配文件(匹配文件中的内容将会匹配到基本文件当中)”按钮加载两个Excel文件。
+                                                                   
+        在导入前最好可以预先处理一下被导入的excel文件,在文件中最好不要有空白列,不要有合并的单元格,需要匹配处理的数据最好是从1行开始.
+        请按照数字引导1-2-3-4-5-6顺序操作.
+        1. 加载源文件：
+           源文件:你的源数据文件,其他文件(匹配文件)内的数据会被匹配到这个文件内.
+          
+        2.加载匹配文件：
+           匹配文件:这个文件的内容会被匹配到源文件内. 
 
-        2. 选择共同列：
-           在“选择共同列”下拉框中选择两个文件中共同的列。两个文件当中必须要有相同的列数据作为匹配标准.
+        3.选择共同列：
+           一般来讲两个文件中只有一个共同列,这时不需要手动选择,只有两个文件中存在两个共同列时才需要手动选择.
 
-        3. 选择需要匹配的列：
-           在“选择需要匹配的列”区域勾选需要合并的列。需要将匹配文件中哪列数据匹配到基准文件中就选择那列数据名称.
+        4.选择需要匹配的列：
+           勾选需要将哪列数据匹配到源文件中。需要哪列数据就选择哪列数据名称. 
 
-        4. 进行数据匹配：
-           点击“进行匹配”按钮进行匹配，匹配后的数据会显示在下方的预览区域。
-
-        5. 下载匹配文件：
-           点击“下载匹配文件”按钮保存合并后的Excel文件。
-
-        6. 注意事项：
-           - 请确保文件格式为Excel格式（.xlsx）。
-           - 请选择至少一个需要匹配的列。
+        5.进行数据匹配：
+           点击“进行匹配”按钮进行匹配，匹配后的数据会显示在下方的预览区域. 
+           
+        6.下载匹配文件：
+           点击“下载匹配文件”按钮保存合并后的Excel文件.
         """
         self.help_label = tk.Label(self.help_frame, text=self.help_text, justify="left", font=("Arial", 10), anchor="nw")
         self.help_label.grid(row=0, column=0, sticky="nswe")
@@ -117,47 +110,49 @@ class ExcelMatcherApp:
         # 设置列宽
         preview_frame.grid_columnconfigure(0, weight=1)
 
+    def load_excel_file(self, title):
+        """通用函数，用于加载Excel文件"""
+        file_path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx;*.xls")], title=title)
+        if file_path:
+            if not os.path.exists(file_path):  # 增加文件路径验证
+                messagebox.showerror("错误", "文件路径不存在！")
+                return None
+            try:
+                df = pd.read_excel(file_path, dtype=str)
+                print(df.dtypes)
+                return df
+            except Exception as e:
+                messagebox.showerror("错误", f"加载文件失败: {e}\n详细错误信息：{str(e)}")
+        return None
+
     def load_base_file(self):
         """加载基本文件"""
-        file_path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx;*.xls")])
-        if file_path:
-            try:
-                # 修改为所有列都读取为字符串
-                self.base_file = pd.read_excel(file_path, dtype=str)
-                # 打印数据类型，确认是否为字符串类型
-                print(self.base_file.dtypes)
-                self.base_columns = self.base_file.columns.tolist()
-                print(f"基本文件列名：{self.base_columns}")
-                self.check_common_columns()  # 检查并更新共同列
-                self.check_buttons_enabled()
-                self.handle_long_numeric_columns(self.base_file)  # 检查并处理长数字列
-                messagebox.showinfo("成功", f"基本文件加载成功！文件路径：{file_path}")
-            except Exception as e:
-                messagebox.showerror("错误", f"加载基本文件失败: {e}")
+        self.base_file = self.load_excel_file("读取源文件")
+        if self.base_file is not None:
+            self.base_columns = self.base_file.columns.tolist()
+            print(f"源文件列名：{self.base_columns}")
+            self.check_common_columns()
+            self.check_buttons_enabled()
+            self.handle_long_numeric_columns(self.base_file)
+            messagebox.showinfo("成功", f"源文件加载成功！")
 
     def load_match_file(self):
         """加载匹配文件"""
-        file_path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx;*.xls")])
-        if file_path:
-            try:
-                self.match_file = pd.read_excel(file_path, dtype=str)
-                print(self.match_file.dtypes)
-                self.match_columns = self.match_file.columns.tolist()
-                print(f"匹配文件列名：{self.match_columns}")
-                self.check_common_columns()  # 检查并更新共同列
-                self.check_buttons_enabled()
-                self.update_column_selection()  # 更新选择匹配列
-                self.handle_long_numeric_columns(self.match_file)  # 检查并处理长数字列
-                messagebox.showinfo("成功", f"匹配文件加载成功！文件路径：{file_path}")
-            except Exception as e:
-                messagebox.showerror("错误", f"加载匹配文件失败: {e}")
+        self.match_file = self.load_excel_file("读取匹配文件")
+        if self.match_file is not None:
+            self.match_columns = self.match_file.columns.tolist()
+            print(f"匹配文件列名：{self.match_columns}")
+            self.check_common_columns()
+            self.check_buttons_enabled()
+            self.update_column_selection()
+            self.handle_long_numeric_columns(self.match_file)
+            messagebox.showinfo("成功", f"匹配文件加载成功！")
 
     def handle_long_numeric_columns(self, df):
         """处理长数字列，确保大于11位的数字列被强制转换为字符串"""
         for col in df.columns:
             if pd.api.types.is_numeric_dtype(df[col]):
                 df[col] = df[col].apply(lambda x: str(int(x)) if pd.notna(x) and x == int(x) else str(x))
-            # 强制将可能会丢失精度的数字列转为字符串
             elif df[col].dtype == float:
                 df[col] = df[col].apply(lambda x: str(int(x)) if pd.notna(x) and x == int(x) else str(x))
 
@@ -182,7 +177,7 @@ class ExcelMatcherApp:
             menu = self.match_column_menu["menu"]
             menu.delete(0, "end")
             for column in self.common_columns:
-                menu.add_command(label=column, command=tk._setit(self.match_column, column))
+                menu.add_command(label=column, command=lambda col=column: self.match_column.set(col))
         else:
             messagebox.showwarning("警告", "没有共同列可以选择！")
 
@@ -219,6 +214,12 @@ class ExcelMatcherApp:
         else:
             messagebox.showwarning("警告", "请先加载基本文件和匹配文件！")
 
+        # 增加进度条显示
+        self.progress.start()
+        self.root.update_idletasks()
+        time.sleep(1)  # 模拟耗时操作
+        self.progress.stop()
+
     def show_preview(self):
         """显示数据预览"""
         preview_rows = self.preview_row_count.get()
@@ -246,6 +247,8 @@ class ExcelMatcherApp:
         self.tree["show"] = "headings"
         for col in preview_data.columns:
             self.tree.heading(col, text=col)
+            # 设置列的对齐方式为居中
+            self.tree.column(col, anchor="center")
 
         # 插入数据行
         for index, row in preview_data.iterrows():
@@ -267,7 +270,7 @@ class ExcelMatcherApp:
                     print(self.matched_data.dtypes)
 
                     # 创建新的工作簿
-                    wb = Workbook()
+                    wb = openpyxl.Workbook()
                     ws = wb.active
 
                     # 处理列头
@@ -313,6 +316,8 @@ class ExcelMatcherApp:
 
 
 if __name__ == "__main__":
+    import os
+    import time
     root = tk.Tk()
     app = ExcelMatcherApp(root)
     root.mainloop()
